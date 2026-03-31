@@ -89,7 +89,7 @@ class PPIClient:
 
         mov = AccountMovements(
             self.account_number,
-            (datetime.now() - timedelta(days=730)).strftime("%Y-%m-%d"),
+            (datetime.now() - timedelta(days=1825)).strftime("%Y-%m-%d"),
             datetime.now().strftime("%Y-%m-%d"),
             ticker,
         )
@@ -101,7 +101,7 @@ class PPIClient:
         if not movimientos:
             return {}
 
-        # Promedio ponderado de compras (quantity > 0, precio en USD por CEDEAR)
+        # Promedio ponderado de compras (quantity > 0, precio en ARS — PPI devuelve ARS)
         total_cantidad = 0
         total_costo = 0.0
         for m in movimientos:
@@ -114,26 +114,23 @@ class PPIClient:
         if total_cantidad == 0:
             return {}
 
-        precio_promedio_usd = total_costo / total_cantidad
+        # price ya viene en ARS — no multiplicar por CCL
+        precio_promedio_ars_calc = total_costo / total_cantidad
 
-        # Convertir a ARS usando CCL actual
         ccl = get_ccl_referencia()
-        precio_promedio_ars_calc = precio_promedio_usd * ccl if ccl else None
+        precio_promedio_usd = precio_promedio_ars_calc / ccl if ccl else None
 
-        # P&L usando precio ARS actual (pasado como parámetro para evitar recursión)
+        # P&L en ARS % y USD (usando CCL actual para ambos — aproximación razonable)
         pnl_pct = None
         pnl_usd = None
-        precio_actual_usd = None
-        if precio_actual_ars and ccl:
-            precio_actual_usd = precio_actual_ars / ccl
-        if precio_actual_usd and precio_promedio_usd:
-            pnl_pct = ((precio_actual_usd / precio_promedio_usd) - 1) * 100
-            pnl_usd = (precio_actual_usd - precio_promedio_usd) * cantidad_actual
+        if precio_actual_ars and precio_promedio_ars_calc:
+            pnl_pct = ((precio_actual_ars / precio_promedio_ars_calc) - 1) * 100
+            if ccl:
+                pnl_usd = ((precio_actual_ars - precio_promedio_ars_calc) / ccl) * cantidad_actual
 
         return {
-            "precio_promedio_usd": round(precio_promedio_usd, 2),
-            "precio_promedio_ars": round(precio_promedio_ars_calc) if precio_promedio_ars_calc else None,
-            "precio_actual_usd": round(precio_actual_usd, 2) if precio_actual_usd else None,
+            "precio_promedio_usd": round(precio_promedio_usd, 2) if precio_promedio_usd else None,
+            "precio_promedio_ars": round(precio_promedio_ars_calc),
             "pnl_pct": round(pnl_pct, 1) if pnl_pct is not None else None,
             "pnl_usd": round(pnl_usd, 2) if pnl_usd is not None else None,
         }
