@@ -53,10 +53,15 @@ class PPIClient:
     def enriquecer_con_pnl(self, cartera: dict) -> dict:
         """
         Enriquece una cartera existente con precio promedio y P&L.
+        Solo calcula para CEDEARs — bonos y acciones argentinas tienen unidades
+        de precio incompatibles con el cálculo ARS/CCL.
         Llama a la API de movimientos para cada posición — puede tardar 30-60 seg.
         Modifica el dict in-place y también lo retorna.
         """
+        from data.cedears import CEDEARS as CEDEARS_DICT
         for ticker, pos in cartera.items():
+            if ticker not in CEDEARS_DICT:
+                continue  # solo CEDEARs: bonos y acciones tienen precios en unidades distintas
             try:
                 resultado = self.calcular_precio_promedio(
                     ticker,

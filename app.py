@@ -252,6 +252,8 @@ elif seccion == "Oportunidades":
         default=CEDEARS_TOP_LIQUIDOS,
     )
 
+    st.caption("Score técnico únicamente (sin análisis fundamental). Usá **Analizar CEDEAR** para el análisis completo.")
+
     if st.button("🔍 Escanear oportunidades", type="primary"):
         resultados = []
         barra = st.progress(0, "Analizando...")
@@ -264,7 +266,7 @@ elif seccion == "Oportunidades":
                 "Nombre": CEDEARS[ticker]["nombre"],
                 "Sector": CEDEARS[ticker]["sector"],
                 "Score técnico": tec.get("score_tecnico", 0),
-                "Señal": tec.get("conclusion", "N/A"),
+                "Señal técnica": tec.get("conclusion", "N/A"),
                 "RSI": tec.get("rsi"),
                 "EMA20>EMA50": "✅" if (tec.get("ema20") and tec.get("ema50") and tec["ema20"] > tec["ema50"]) else "❌",
             })
