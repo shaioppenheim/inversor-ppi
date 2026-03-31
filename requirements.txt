@@ -1,0 +1,8 @@
+streamlit
+yfinance
+pandas
+ta
+requests
+plotly
+python-dotenv
+ppi_client

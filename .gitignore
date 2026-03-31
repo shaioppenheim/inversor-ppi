@@ -1,0 +1,17 @@
+# Credenciales — NUNCA subir al repo
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# Exports y archivos temporales
+exports/
+/tmp/
+
+# OS
+.DS_Store
